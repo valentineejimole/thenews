@@ -26,13 +26,18 @@ export const metadata: Metadata = buildMetadata({
 });
 
 metadata.icons = {
-  icon: [
-    { url: "/favicon.ico" },
-    { url: "/favicon.png", type: "image/png" },
-  ],
+  icon: "/favicon.ico",
   shortcut: "/favicon.ico",
   apple: "/apple-touch-icon.png",
+  other: [
+    {
+      rel: "mask-icon",
+      url: "/safari-pinned-tab.svg",
+      color: "#17304f",
+    },
+  ],
 };
+metadata.manifest = "/site.webmanifest";
 
 const themeScript = `
   (() => {
