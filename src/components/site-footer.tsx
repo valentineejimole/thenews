@@ -33,9 +33,9 @@ const socialLinks = [
 export function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-[var(--border-subtle)] bg-[linear-gradient(180deg,rgba(179,143,69,0.08),transparent_26%)]">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mb-8 h-px w-full bg-[linear-gradient(90deg,var(--accent),rgba(179,143,69,0.16),transparent_80%)] opacity-70" />
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.8fr_0.8fr_1fr]">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+        <div className="mb-6 h-px w-full bg-[linear-gradient(90deg,var(--accent),rgba(179,143,69,0.16),transparent_80%)] opacity-70 sm:mb-8" />
+        <div className="grid gap-8 sm:gap-7 lg:grid-cols-[1.15fr_0.8fr_0.8fr_1fr]">
           <div className="max-w-sm">
             <div className="flex items-center gap-3">
               <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-white p-1 shadow-sm">
@@ -56,7 +56,7 @@ export function SiteFooter() {
                 </p>
               </div>
             </div>
-            <h2 className="mt-4 max-w-[14ch] text-[1.9rem] font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)]">
+            <h2 className="mt-4 max-w-[14ch] text-[1.55rem] font-semibold leading-[1.05] tracking-[-0.04em] text-[var(--text-primary)] sm:text-[1.9rem]">
               Reporting with clarity, range, and editorial discipline.
             </h2>
             <p className="mt-3 max-w-[32ch] text-sm leading-6 text-[var(--text-muted)]">
@@ -90,7 +90,7 @@ export function SiteFooter() {
             ))}
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:gap-8">
             <div className="grid gap-3 content-start">
               <h3 className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-primary)]">
                 Company
@@ -128,7 +128,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-5 text-sm text-[var(--text-soft)] lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-8 flex flex-col gap-4 border-t border-[var(--border-subtle)] pt-5 text-sm text-[var(--text-soft)] lg:mt-10 lg:flex-row lg:items-center lg:justify-between">
           <p className="max-w-none text-[13px]">
             Copyright 2026 NewsPressal. Independent reporting with a global editorial perspective.
           </p>

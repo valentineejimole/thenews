@@ -56,7 +56,7 @@ export function NewsletterSignup({
   return (
     <section
       className={`rounded-[1.75rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[0_24px_60px_rgba(15,23,42,0.08)] ${
-        compact ? "p-5" : "p-6"
+        compact ? "p-4 sm:p-5" : "p-5 sm:p-6"
       }`}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
@@ -64,7 +64,7 @@ export function NewsletterSignup({
       </p>
       <h2
         className={`mt-3 max-w-sm font-semibold tracking-tight text-[var(--text-primary)] ${
-          compact ? "text-[1.45rem] leading-[1.08]" : "text-2xl"
+          compact ? "text-[1.32rem] leading-[1.08] sm:text-[1.45rem]" : "text-[1.45rem] sm:text-2xl"
         }`}
       >
         Get the morning briefing before the market opens.
@@ -72,7 +72,7 @@ export function NewsletterSignup({
       <p className={`mt-3 text-[var(--text-muted)] ${compact ? "text-[13px] leading-6" : "text-sm"}`}>
         Sharp headlines, essential context, and the stories editors are watching next.
       </p>
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.18em] text-[var(--text-soft)]">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] uppercase tracking-[0.18em] text-[var(--text-soft)] sm:text-xs">
         <span>Weekdays 6 a.m.</span>
         <span>Markets</span>
         <span>Politics</span>

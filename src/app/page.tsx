@@ -52,19 +52,19 @@ export default async function HomePage() {
 
   return (
     <div className="page-shell">
-      <div className="mx-auto max-w-[78rem] px-4 pb-14 pt-5 sm:px-6 lg:px-8">
-        <section className="mb-9">
-          <div className="mb-4 grid items-end gap-4 border-b border-[var(--border-subtle)] pb-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="mx-auto max-w-[78rem] px-4 pb-12 pt-4 sm:px-6 sm:pb-14 sm:pt-5 lg:px-8">
+        <section className="mb-8 sm:mb-9">
+          <div className="mb-4 grid items-end gap-3 border-b border-[var(--border-subtle)] pb-4 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--accent)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--accent)] sm:text-xs sm:tracking-[0.34em]">
                 Front Page
               </p>
-              <h1 className="mt-2 max-w-4xl text-[clamp(2.5rem,4.6vw,4rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-[var(--text-primary)] [text-wrap:pretty]">
+              <h1 className="mt-2 max-w-4xl text-[clamp(2rem,9vw,4rem)] font-semibold leading-[1] tracking-[-0.05em] text-[var(--text-primary)] [text-wrap:pretty]">
                 A premium newsroom for power, markets, technology, sports, and culture.
               </h1>
             </div>
             <div className="flex items-end self-end">
-              <p className="max-w-md text-sm leading-6 text-[var(--text-muted)]">
+              <p className="max-w-md text-[14px] leading-6 text-[var(--text-muted)] sm:text-sm">
                 Live headlines, sharp context, and a reading experience designed to feel like a daily habit rather than a demo.
               </p>
             </div>
@@ -73,7 +73,7 @@ export default async function HomePage() {
           <div className="mb-5 overflow-hidden rounded-[1.25rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
             <div className="grid gap-0 md:grid-cols-[11rem_minmax(0,1fr)]">
               <div className="border-b border-[var(--border-subtle)] px-4 py-3 md:border-b-0 md:border-r">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--accent)] sm:text-xs sm:tracking-[0.28em]">
                   Latest Headlines
                 </p>
               </div>
@@ -82,9 +82,14 @@ export default async function HomePage() {
                   <Link
                     key={article.slug}
                     href={`/article/${article.slug}`}
-                    className="border-t border-[var(--border-subtle)] px-4 py-3 text-sm font-semibold leading-6 text-[var(--text-primary)] transition hover:bg-[var(--surface-subtle)] hover:text-[var(--accent)] md:border-l md:border-t-0"
+                    className="border-t border-[var(--border-subtle)] px-4 py-3.5 transition hover:bg-[var(--surface-subtle)] hover:text-[var(--accent)] md:border-l md:border-t-0"
                   >
-                    {article.title}
+                    <p className="headline-clamp-2 text-[14px] font-semibold leading-6 text-[var(--text-primary)]">
+                      {article.title}
+                    </p>
+                    <p className="mt-1.5 text-[11px] uppercase tracking-[0.16em] text-[var(--text-soft)]">
+                      {article.category} • {formatArticleDateTime(article.updatedAt ?? article.publishedAt)}
+                    </p>
                   </Link>
                 ))}
               </div>
@@ -95,7 +100,7 @@ export default async function HomePage() {
             <div className="min-w-0 space-y-6">
               <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_17rem]">
                 <FeaturedStory article={featuredArticle} />
-                <div className="self-start rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5">
+                <div className="self-start rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4 sm:p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
                     Latest now
                   </p>
@@ -135,7 +140,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="editorial-divider mb-11 grid items-start gap-6 pt-7 xl:grid-cols-[minmax(0,1fr)_21rem]">
+        <section className="editorial-divider mb-9 grid items-start gap-6 pt-6 sm:mb-11 sm:pt-7 xl:grid-cols-[minmax(0,1fr)_21rem]">
           <div>
             <SectionHeading eyebrow="Latest News" title="The stories moving now" />
             <div className="mt-5 grid gap-4">
@@ -154,7 +159,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="editorial-divider mb-11 grid items-start gap-6 xl:grid-cols-[18rem_minmax(0,1fr)] pt-7">
+        <section className="editorial-divider mb-9 grid items-start gap-6 pt-6 sm:mb-11 sm:pt-7 xl:grid-cols-[18rem_minmax(0,1fr)]">
           <aside className="self-start rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-5">
             <div className="flex items-center justify-between gap-3 border-b border-[var(--border-subtle)] pb-3">
               <div>
@@ -204,7 +209,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="editorial-divider mb-11 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_17rem] pt-7">
+        <section className="editorial-divider mb-9 grid items-start gap-6 pt-6 sm:mb-11 sm:pt-7 xl:grid-cols-[minmax(0,1fr)_17rem]">
           <div>
             <SectionHeading eyebrow="Newsroom Clock" title="The latest signals across the desks" />
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -238,7 +243,7 @@ export default async function HomePage() {
           </aside>
         </section>
 
-        <section className="editorial-divider mb-11 grid items-start gap-6 xl:grid-cols-2 pt-7">
+        <section className="editorial-divider mb-9 grid items-start gap-6 pt-6 sm:mb-11 sm:pt-7 xl:grid-cols-2">
           <div>
             <SectionHeading eyebrow="Opinion" title="Arguments worth reading" href={`/category/${getCategorySlug("Opinion")}`} />
             <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -257,7 +262,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="editorial-divider mb-11 pt-7">
+        <section className="editorial-divider mb-9 pt-6 sm:mb-11 sm:pt-7">
           <SectionHeading eyebrow="Stories by Desk" title="Politics, business, technology, and sports" />
           <div className="mt-5 grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
             {[...politics, ...business, ...tech, ...sports].slice(0, 4).map((article) => (
@@ -266,7 +271,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="editorial-divider grid items-start gap-6 pt-7 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <section className="editorial-divider grid items-start gap-6 pt-6 sm:pt-7 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <div>
             <SectionHeading eyebrow="Video" title="Visual reporting and studio analysis" />
             <div className="mt-5 grid items-start gap-4 md:grid-cols-3">

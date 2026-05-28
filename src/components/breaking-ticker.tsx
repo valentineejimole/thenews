@@ -10,8 +10,8 @@ export function BreakingTicker({ articles }: { articles: Article[] }) {
 
   return (
     <div className="overflow-hidden border-b border-[var(--border-subtle)] bg-[var(--ticker-bg)] text-[var(--ticker-text)]">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2 sm:px-6 lg:px-8">
-        <span className="inline-flex h-7 shrink-0 items-center rounded-full bg-[var(--signal)] px-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-white">
+      <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-2 lg:px-8">
+        <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-[var(--signal)] px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-white sm:h-7 sm:px-3 sm:text-[11px]">
           Breaking
         </span>
         <p className="hidden shrink-0 text-xs font-medium text-[var(--ticker-text)]/75 sm:block">
@@ -23,7 +23,7 @@ export function BreakingTicker({ articles }: { articles: Article[] }) {
               <Link
                 key={`${article.slug}-${index}`}
                 href={`/article/${article.slug}`}
-                className="ticker-item whitespace-nowrap text-sm font-semibold text-[var(--ticker-text)] transition hover:text-white"
+                className="ticker-item whitespace-nowrap text-[12px] font-semibold text-[var(--ticker-text)] transition hover:text-white sm:text-sm"
               >
                 {article.title}
               </Link>

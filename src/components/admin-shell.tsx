@@ -132,7 +132,7 @@ export function AdminShell({
           </aside>
 
           <div className="min-w-0">
-            <header className="sticky top-[2.6rem] z-40 rounded-[2rem] border border-[var(--border-subtle)] bg-[color:var(--surface-raised)]/94 px-4 py-4 shadow-[0_16px_44px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-5 lg:px-6">
+            <header className="sticky top-3 z-40 rounded-[2rem] border border-[var(--border-subtle)] bg-[color:var(--surface-raised)]/94 px-4 py-3.5 shadow-[0_16px_44px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:top-4 sm:px-5 sm:py-4 lg:px-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export function AdminShell({
                       {eyebrow}
                     </span>
                   </div>
-                  <h1 className="mt-3 max-w-4xl text-[clamp(2rem,3vw,3.25rem)] font-semibold leading-[0.95] tracking-[-0.045em] text-[var(--text-primary)]">
+                  <h1 className="mt-3 max-w-4xl text-[clamp(1.85rem,5vw,3.25rem)] font-semibold leading-[0.98] tracking-[-0.045em] text-[var(--text-primary)]">
                     {title}
                   </h1>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--text-muted)]">

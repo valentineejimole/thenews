@@ -130,7 +130,7 @@ a {
   gap: 2.5rem;
   white-space: nowrap;
   will-change: transform;
-  animation: ticker 42s linear infinite;
+  animation: ticker 48s linear infinite;
 }
 
 .ticker-viewport:hover .ticker-track {
@@ -183,6 +183,13 @@ a {
   -webkit-line-clamp: 3;
 }
 
+.headline-clamp-2 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .excerpt-clamp-3 {
   display: -webkit-box;
   overflow: hidden;
@@ -195,4 +202,19 @@ a {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+@media (max-width: 639px) {
+  .ticker-track {
+    gap: 2rem;
+    animation-duration: 56s;
+  }
+
+  .ticker-item::after {
+    margin-left: 2rem;
+  }
+
+  .editorial-divider::after {
+    margin-top: 0.85rem;
+  }
 }

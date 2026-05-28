@@ -68,15 +68,15 @@ export default async function ArticlePage({
 
   return (
     <div className="page-shell">
-      <div className="mx-auto max-w-[78rem] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[78rem] px-4 pb-14 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:px-8">
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <article className="min-w-0">
             <div className="max-w-4xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-[var(--border-subtle)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--text-soft)]">
+                <span className="rounded-full border border-[var(--border-subtle)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)] sm:tracking-[0.22em]">
                   {article.source}
                 </span>
-                <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white">
+                <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white sm:tracking-[0.22em]">
                   {article.category}
                 </span>
                 {article.video ? (
@@ -85,10 +85,10 @@ export default async function ArticlePage({
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-4 max-w-[18ch] text-5xl font-semibold leading-[0.92] tracking-[-0.05em] text-[var(--text-primary)] [text-wrap:balance] sm:text-6xl">
+              <h1 className="mt-4 max-w-[16ch] text-[clamp(2.2rem,8vw,4rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-[var(--text-primary)] [text-wrap:balance]">
                 {article.title}
               </h1>
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-[var(--text-muted)]">
+              <p className="mt-4 max-w-3xl text-[15px] leading-7 text-[var(--text-muted)] sm:mt-5 sm:text-lg sm:leading-8">
                 {article.excerpt}
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.18em] text-[var(--text-soft)]">

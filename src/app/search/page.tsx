@@ -26,16 +26,16 @@ export default async function SearchPage({
 
   return (
     <div className="page-shell">
-      <div className="mx-auto max-w-[78rem] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[78rem] px-4 pb-14 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:px-8">
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <section className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--accent)] sm:text-xs sm:tracking-[0.3em]">
               Search
             </p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-[-0.05em] text-[var(--text-primary)] sm:text-6xl">
+            <h1 className="mt-3 text-[clamp(2.25rem,8vw,3.75rem)] font-semibold tracking-[-0.05em] text-[var(--text-primary)]">
               Find the story.
             </h1>
-            <p className="mt-4 max-w-2xl text-base text-[var(--text-muted)]">
+            <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[var(--text-muted)] sm:mt-4 sm:text-base">
               Search the archive by topic, category, source desk, author, or keyword.
             </p>
             <div className="mt-8">

@@ -12,10 +12,10 @@ export function SectionHeading({
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--accent)] sm:text-xs sm:tracking-[0.28em]">
           {eyebrow}
         </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
+        <h2 className="mt-2 text-[1.55rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-3xl">
           {title}
         </h2>
       </div>
