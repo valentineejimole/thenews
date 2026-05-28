@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { articles as mockArticles, categories, type Article, type Category } from "@/lib/news-data";
-import type { AdminArticleRecord } from "@/lib/admin";
+import type { AdminArticleRecord, HomepagePlacement } from "@/lib/admin";
 import type { SupabaseArticleRow, SupabaseProfile, SupabaseProfileRole } from "@/lib/supa-types";
 import { createSupabasePublicClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -83,6 +83,19 @@ function buildReadTime(content: string, readingTime?: number | null) {
   return estimateReadTime(content);
 }
 
+function normalizeHomepagePlacement(value?: string | null): HomepagePlacement {
+  switch (value) {
+    case "lead":
+    case "top_story":
+    case "latest":
+    case "trending":
+    case "editor_pick":
+      return value;
+    default:
+      return "none";
+  }
+}
+
 function isScheduledReady(row: Pick<SupabaseArticleRow, "scheduled_at" | "status">, now = new Date()) {
   if (row.status !== "published") {
     return false;
@@ -101,6 +114,9 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
   const featured = Boolean(row.is_featured);
   const trending = Boolean(row.is_trending);
   const publishedAt = row.scheduled_at ?? row.published_at ?? row.created_at;
+  const showOnHomepage = Boolean(row.show_on_homepage);
+  const homepagePlacement = normalizeHomepagePlacement(row.homepage_placement);
+  const homepagePriority = row.homepage_priority ?? 100;
 
   return {
     slug: row.slug,
@@ -123,13 +139,24 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
     scheduledAt: row.scheduled_at ?? undefined,
     source: buildSourceLabel(category),
     location: "Global Desk",
-    featured: featured || index === 0,
+    featured: featured || (showOnHomepage && homepagePlacement === "lead") || index === 0,
     breaking: index < 2,
-    editorPick: featured || index < 4,
+    editorPick: featured || homepagePlacement === "editor_pick" || index < 4,
     marketWatch: category === "Business" && index < 3,
     weekendRead: content.join(" ").length > 1200,
     video: false,
-    trendingScore: Math.max(60, 100 - index + (featured ? 8 : 0) + (trending ? 12 : 0)),
+    showOnHomepage,
+    homepagePriority,
+    homepagePlacement,
+    trendingScore: Math.max(
+      60,
+      100 -
+        index +
+        (featured ? 8 : 0) +
+        (trending ? 12 : 0) +
+        (homepagePlacement === "trending" ? 10 : 0) +
+        (homepagePlacement === "lead" ? 14 : 0),
+    ),
     tags: [category.toLowerCase(), "newspressal", "analysis"],
   };
 }
@@ -308,5 +335,8 @@ export function mapSupabaseArticleToAdminRecord(row: SupabaseArticleRow): AdminA
     readingTime: row.reading_time,
     editorNote: row.editor_note ?? "",
     updatedAt: row.updated_at,
+    showOnHomepage: Boolean(row.show_on_homepage),
+    homepagePriority: row.homepage_priority ?? 100,
+    homepagePlacement: normalizeHomepagePlacement(row.homepage_placement),
   };
 }

@@ -5,11 +5,8 @@ import { NewsletterSignup } from "@/components/newsletter-signup";
 import { SectionHeading } from "@/components/section-heading";
 import { TrendingList } from "@/components/trending-list";
 import { getPublicArticles } from "@/lib/articles";
-import {
-  buildMetadata,
-  formatArticleDateTime,
-  getCategorySlug,
-} from "@/lib/news";
+import type { Article } from "@/lib/news-data";
+import { buildMetadata, formatArticleDateTime, getCategorySlug } from "@/lib/news";
 
 export const metadata = buildMetadata({
   title: "NewsPressal | Independent. Insightful. In real time.",
@@ -24,18 +21,72 @@ const marketSnapshot = [
   { asset: "Bitcoin", label: "Crypto", price: "$68,200", change: "+1.18%", tone: "text-emerald-600" },
 ];
 
+function dedupeArticles(articles: Article[]) {
+  const seen = new Set<string>();
+
+  return articles.filter((article) => {
+    if (seen.has(article.slug)) {
+      return false;
+    }
+
+    seen.add(article.slug);
+    return true;
+  });
+}
+
+function sortEditorially(articles: Article[]) {
+  return [...articles].sort((a, b) => {
+    const priorityDiff = (a.homepagePriority ?? 100) - (b.homepagePriority ?? 100);
+
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
+}
+
 export default async function HomePage() {
   const publicArticles = await getPublicArticles();
-  const featuredArticle = publicArticles.find((article) => article.featured) ?? publicArticles[0];
-  const trendingArticles = [...publicArticles]
-    .sort((a, b) => b.trendingScore - a.trendingScore)
-    .slice(0, 5);
-  const latestArticles = publicArticles
-    .filter((article) => article.slug !== featuredArticle.slug)
-    .slice(0, 6);
-  const editorPicks = publicArticles
-    .filter((article) => article.slug !== featuredArticle.slug && (article.editorPick || article.featured))
-    .slice(0, 4);
+  const managedHomepageArticles = publicArticles.filter((article) => article.showOnHomepage);
+  const placementArticles = (placement: NonNullable<Article["homepagePlacement"]>) =>
+    sortEditorially(
+      managedHomepageArticles.filter((article) => article.homepagePlacement === placement),
+    );
+
+  const featuredArticle =
+    placementArticles("lead")[0] ?? publicArticles.find((article) => article.featured) ?? publicArticles[0];
+  const topStories = dedupeArticles(
+    placementArticles("top_story").concat(
+      sortEditorially(
+        publicArticles.filter(
+          (article) =>
+            article.slug !== featuredArticle.slug &&
+            article.showOnHomepage &&
+            article.homepagePlacement === "latest",
+        ),
+      ),
+    ),
+  ).slice(0, 3);
+  const latestArticles = dedupeArticles(
+    placementArticles("latest").concat(
+      publicArticles.filter((article) => article.slug !== featuredArticle.slug),
+    ),
+  ).slice(0, 6);
+  const trendingArticles = dedupeArticles(
+    placementArticles("trending").concat(
+      [...publicArticles]
+        .sort((a, b) => b.trendingScore - a.trendingScore)
+        .filter((article) => article.slug !== featuredArticle.slug),
+    ),
+  ).slice(0, 5);
+  const editorPicks = dedupeArticles(
+    placementArticles("editor_pick").concat(
+      publicArticles.filter(
+        (article) => article.slug !== featuredArticle.slug && (article.editorPick || article.featured),
+      ),
+    ),
+  ).slice(0, 4);
   const marketWatch = publicArticles
     .filter((article) => article.marketWatch || article.category === "Business")
     .slice(0, 3);
@@ -48,7 +99,11 @@ export default async function HomePage() {
   const tech = publicArticles.filter((article) => article.category === "Tech").slice(0, 2);
   const business = publicArticles.filter((article) => article.category === "Business").slice(0, 2);
   const sports = publicArticles.filter((article) => article.category === "Sports").slice(0, 2);
-  const headlineStrip = publicArticles.slice(0, 5);
+  const headlineStrip = dedupeArticles(
+    placementArticles("latest").concat(
+      publicArticles.filter((article) => article.slug !== featuredArticle.slug),
+    ),
+  ).slice(0, 5);
 
   return (
     <div className="page-shell">
@@ -68,6 +123,10 @@ export default async function HomePage() {
                 Live headlines, sharp context, and a reading experience designed to feel like a daily habit rather than a demo.
               </p>
             </div>
+          </div>
+
+          <div className="mb-5 sm:hidden">
+            <FeaturedStory article={featuredArticle} />
           </div>
 
           <div className="mb-5 overflow-hidden rounded-[1.25rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
@@ -96,9 +155,17 @@ export default async function HomePage() {
             </div>
           </div>
 
+          {topStories.length ? (
+            <div className="mb-5 grid gap-4 sm:hidden">
+              {topStories.map((article) => (
+                <ArticleCard key={article.slug} article={article} variant="compact" />
+              ))}
+            </div>
+          ) : null}
+
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
             <div className="min-w-0 space-y-6">
-              <div className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_17rem]">
+              <div className="hidden items-start gap-6 sm:grid 2xl:grid-cols-[minmax(0,1fr)_17rem]">
                 <FeaturedStory article={featuredArticle} />
                 <div className="self-start rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4 sm:p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
@@ -126,6 +193,12 @@ export default async function HomePage() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {(topStories.length ? topStories : latestArticles.slice(0, 3)).map((article) => (
+                  <ArticleCard key={article.slug} article={article} variant="compact" />
+                ))}
               </div>
 
               <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">

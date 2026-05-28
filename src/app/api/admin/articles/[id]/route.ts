@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { categories } from "@/lib/news-data";
+import type { HomepagePlacement } from "@/lib/admin";
 import { canManageAllArticles, getAuthenticatedProfile, slugifyArticleTitle } from "@/lib/articles";
 
 type ArticlePayload = {
@@ -19,7 +20,19 @@ type ArticlePayload = {
   trending?: boolean;
   readingTime?: number | null;
   editorNote?: string;
+  showOnHomepage?: boolean;
+  homepagePriority?: number | null;
+  homepagePlacement?: HomepagePlacement;
 };
+
+const homepagePlacements: HomepagePlacement[] = [
+  "none",
+  "lead",
+  "top_story",
+  "latest",
+  "trending",
+  "editor_pick",
+];
 
 function isValidCategory(value: string) {
   return categories.includes(value as (typeof categories)[number]);
@@ -47,6 +60,18 @@ function normalizeReadingTime(value?: number | null) {
   }
 
   return Math.round(value);
+}
+
+function normalizeHomepagePriority(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 100;
+  }
+
+  return Math.max(0, Math.round(value));
+}
+
+function normalizeHomepagePlacement(value?: string | null): HomepagePlacement {
+  return homepagePlacements.includes(value as HomepagePlacement) ? (value as HomepagePlacement) : "none";
 }
 
 export async function PATCH(
@@ -85,6 +110,8 @@ export async function PATCH(
     status === "published"
       ? scheduledAt ?? existing.published_at ?? new Date().toISOString()
       : null;
+  const homepagePlacement = normalizeHomepagePlacement(body.homepagePlacement);
+  const showOnHomepage = Boolean(body.showOnHomepage);
 
   if (!title || !content || !slug || !isValidCategory(category)) {
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
@@ -106,6 +133,9 @@ export async function PATCH(
       seo_description: body.seoDescription?.trim() || null,
       is_featured: Boolean(body.featured),
       is_trending: Boolean(body.trending),
+      show_on_homepage: showOnHomepage,
+      homepage_priority: normalizeHomepagePriority(body.homepagePriority),
+      homepage_placement: showOnHomepage ? homepagePlacement : "none",
       scheduled_at: scheduledAt,
       reading_time: normalizeReadingTime(body.readingTime),
       editor_note: body.editorNote?.trim() || null,

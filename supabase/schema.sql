@@ -28,10 +28,17 @@ alter table public.articles add column if not exists seo_title text;
 alter table public.articles add column if not exists seo_description text;
 alter table public.articles add column if not exists is_featured boolean default false;
 alter table public.articles add column if not exists is_trending boolean default false;
+alter table public.articles add column if not exists show_on_homepage boolean default false;
+alter table public.articles add column if not exists homepage_priority integer default 100;
+alter table public.articles add column if not exists homepage_placement text default 'none';
 alter table public.articles add column if not exists scheduled_at timestamptz;
 alter table public.articles add column if not exists cover_alt text;
 alter table public.articles add column if not exists reading_time integer;
 alter table public.articles add column if not exists editor_note text;
+alter table public.articles drop constraint if exists articles_homepage_placement_check;
+alter table public.articles
+  add constraint articles_homepage_placement_check
+  check (homepage_placement in ('none', 'lead', 'top_story', 'latest', 'trending', 'editor_pick'));
 
 create table if not exists public.newsletter_subscribers (
   id uuid primary key default gen_random_uuid(),

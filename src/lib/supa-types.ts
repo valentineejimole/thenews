@@ -26,6 +26,9 @@ export type SupabaseArticleRow = {
   seo_description: string | null;
   is_featured: boolean | null;
   is_trending: boolean | null;
+  show_on_homepage: boolean | null;
+  homepage_priority: number | null;
+  homepage_placement: "none" | "lead" | "top_story" | "latest" | "trending" | "editor_pick" | null;
   scheduled_at: string | null;
   reading_time: number | null;
   editor_note: string | null;

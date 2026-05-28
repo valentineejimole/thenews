@@ -35,6 +35,9 @@ export type Article = {
   video?: boolean;
   weekendRead?: boolean;
   marketWatch?: boolean;
+  showOnHomepage?: boolean;
+  homepagePriority?: number;
+  homepagePlacement?: "none" | "lead" | "top_story" | "latest" | "trending" | "editor_pick";
   trendingScore: number;
   tags: string[];
 };

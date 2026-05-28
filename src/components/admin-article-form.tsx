@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminRichTextEditor } from "@/components/admin-rich-text-editor";
-import { slugifyAdminTitle, type AdminArticleRecord } from "@/lib/admin";
+import {
+  slugifyAdminTitle,
+  type AdminArticleRecord,
+  type HomepagePlacement,
+} from "@/lib/admin";
 import { categories } from "@/lib/news-data";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -13,6 +17,15 @@ const authorOptions = [
   "Julian Park",
   "Sana Iqbal",
   "Nora Ellis",
+];
+
+const homepagePlacementOptions: HomepagePlacement[] = [
+  "none",
+  "lead",
+  "top_story",
+  "latest",
+  "trending",
+  "editor_pick",
 ];
 
 function formatPreviewContent(content: string) {
@@ -52,6 +65,13 @@ export function AdminArticleForm({
   const [coverAlt, setCoverAlt] = useState(article.coverAlt ?? "");
   const [readingTime, setReadingTime] = useState(article.readingTime?.toString() ?? "");
   const [editorNote, setEditorNote] = useState(article.editorNote ?? "");
+  const [showOnHomepage, setShowOnHomepage] = useState(Boolean(article.showOnHomepage));
+  const [homepagePriority, setHomepagePriority] = useState(
+    article.homepagePriority?.toString() ?? "100",
+  );
+  const [homepagePlacement, setHomepagePlacement] = useState<HomepagePlacement>(
+    article.homepagePlacement ?? "none",
+  );
   const [coverPreview, setCoverPreview] = useState(article.coverImageUrl);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -133,6 +153,9 @@ export function AdminArticleForm({
       seoDescription,
       featured,
       trending,
+      showOnHomepage,
+      homepagePriority: homepagePriority ? Number(homepagePriority) : 100,
+      homepagePlacement,
       coverAlt,
       readingTime: readingTime ? Number(readingTime) : null,
       editorNote,
@@ -457,6 +480,66 @@ export function AdminArticleForm({
                   className="h-4 w-4 accent-[var(--accent)]"
                 />
               </label>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)] p-4">
+              <div className="border-b border-[var(--border-subtle)] pb-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+                  Homepage Placement
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                  Use this to manually control which stories appear at the top of NewsPressal.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                <label className="flex items-center justify-between rounded-[1.2rem] border border-[var(--border-subtle)] bg-white px-4 py-3">
+                  <span>
+                    <span className="block text-sm font-semibold text-[var(--text-primary)]">
+                      Show on homepage
+                    </span>
+                    <span className="block text-xs text-[var(--text-soft)]">
+                      Include this story in manual homepage editorial slots
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showOnHomepage}
+                    onChange={(event) => setShowOnHomepage(event.target.checked)}
+                    className="h-4 w-4 accent-[var(--accent)]"
+                  />
+                </label>
+
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">Placement</span>
+                    <select
+                      value={homepagePlacement}
+                      onChange={(event) => setHomepagePlacement(event.target.value as HomepagePlacement)}
+                      disabled={!showOnHomepage}
+                      className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {homepagePlacementOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">Priority</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={homepagePriority}
+                      onChange={(event) => setHomepagePriority(event.target.value)}
+                      disabled={!showOnHomepage}
+                      className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </section>

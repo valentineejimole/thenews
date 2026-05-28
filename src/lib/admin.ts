@@ -2,6 +2,13 @@ import { categories, type Category } from "@/lib/news-data";
 import { buildMetadata } from "@/lib/news";
 
 export type ArticleStatus = "draft" | "published";
+export type HomepagePlacement =
+  | "none"
+  | "lead"
+  | "top_story"
+  | "latest"
+  | "trending"
+  | "editor_pick";
 
 export type AdminArticleRecord = {
   id: string;
@@ -22,6 +29,9 @@ export type AdminArticleRecord = {
   readingTime?: number | null;
   editorNote?: string;
   updatedAt?: string;
+  showOnHomepage?: boolean;
+  homepagePriority?: number;
+  homepagePlacement?: HomepagePlacement;
 };
 
 export function getEmptyAdminArticle(): AdminArticleRecord {
@@ -44,6 +54,9 @@ export function getEmptyAdminArticle(): AdminArticleRecord {
     readingTime: null,
     editorNote: "",
     updatedAt: new Date().toISOString(),
+    showOnHomepage: false,
+    homepagePriority: 100,
+    homepagePlacement: "none",
   };
 }
 
