@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/article-card";
 import { NewsletterSignup } from "@/components/newsletter-signup";
+import { NewsImage } from "@/components/news-image";
 import { SocialShare } from "@/components/social-share";
 import { TrendingList } from "@/components/trending-list";
 import {
@@ -104,13 +104,12 @@ export default async function ArticlePage({
             </div>
 
             <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-[2rem] border border-[var(--border-subtle)]">
-              <Image
+              <NewsImage
                 src={article.image}
                 alt={article.imageAlt}
-                fill
                 priority
                 sizes="(min-width: 1024px) 70vw, 100vw"
-                className="object-cover"
+                className="object-cover object-center"
               />
             </div>
 

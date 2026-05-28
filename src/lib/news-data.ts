@@ -178,7 +178,7 @@ export const articles: Article[] = [
     publishedAt: "2026-05-25T14:05:00.000Z",
     readTime: "6 min read",
     image:
-      "https://images.unsplash.com/photo-1604719312566-8912e9c8a213?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
     imageAlt: "Shoppers moving through a modern grocery aisle",
     source: "NewsPressal Business",
     location: "Atlanta",

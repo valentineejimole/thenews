@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { NewsImage } from "@/components/news-image";
 import type { Article } from "@/lib/news-data";
 import { formatArticleDate, formatArticleDateTime, getCategorySlug } from "@/lib/news";
 
@@ -8,13 +8,12 @@ export function FeaturedStory({ article }: { article: Article }) {
     <article className="overflow-hidden rounded-[1.75rem] border border-[var(--border-subtle)] bg-[var(--surface-raised)] shadow-[0_22px_48px_rgba(15,23,42,0.08)]">
       <div className="grid items-start xl:grid-cols-[1.08fr_0.92fr]">
         <div className="relative aspect-[16/10] overflow-hidden xl:aspect-auto xl:min-h-[100%]">
-          <Image
+          <NewsImage
             src={article.image}
             alt={article.imageAlt}
-            fill
             priority
             sizes="(min-width: 1280px) 44rem, (min-width: 1024px) 56vw, 100vw"
-            className="object-cover transition duration-700 group-hover:scale-[1.02]"
+            className="object-cover object-center transition duration-700 group-hover:scale-[1.02]"
           />
         </div>
         <div className="flex min-w-0 flex-col justify-between p-5 sm:p-6 xl:p-7">
