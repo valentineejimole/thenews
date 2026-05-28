@@ -14,6 +14,10 @@ export type AdminArticleRecord = {
   author: string;
   status: ArticleStatus;
   publishDate: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  featured?: boolean;
+  trending?: boolean;
 };
 
 export function getEmptyAdminArticle(): AdminArticleRecord {
@@ -28,6 +32,10 @@ export function getEmptyAdminArticle(): AdminArticleRecord {
     author: "",
     status: "draft",
     publishDate: new Date().toISOString().slice(0, 16),
+    seoTitle: "",
+    seoDescription: "",
+    featured: false,
+    trending: false,
   };
 }
 
@@ -38,4 +46,12 @@ export function buildAdminMetadata(title: string, path: string) {
     path,
     image: "/logo.png",
   });
+}
+
+export function slugifyAdminTitle(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

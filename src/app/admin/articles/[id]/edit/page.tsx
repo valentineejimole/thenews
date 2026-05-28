@@ -45,8 +45,9 @@ export default async function EditAdminArticlePage({
   return (
     <AdminShell
       title="Edit article"
-      description="Adjust story packaging, publishing status, and article body, then save the changes back to Supabase."
+      description="Refine the story package, tune metadata, update scheduling, and manage editorial presentation from one responsive workspace."
       showLogout
+      eyebrow="Publishing Desk"
     >
       <AdminArticleForm article={article} submitLabel="Update article" mode="edit" />
     </AdminShell>

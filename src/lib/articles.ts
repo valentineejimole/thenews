@@ -241,5 +241,9 @@ export function mapSupabaseArticleToAdminRecord(row: SupabaseArticleRow): AdminA
     author: row.author_name ?? "",
     status: row.status,
     publishDate: (row.published_at ?? row.created_at).slice(0, 16),
+    seoTitle: row.title,
+    seoDescription: row.excerpt ?? "",
+    featured: false,
+    trending: row.status === "published",
   };
 }

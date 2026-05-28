@@ -12,6 +12,10 @@ type ArticlePayload = {
   author?: string;
   status?: "draft" | "published";
   publishDate?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  featured?: boolean;
+  trending?: boolean;
 };
 
 function isValidCategory(value: string) {
@@ -35,6 +39,9 @@ export async function POST(request: Request) {
   if (!title || !content || !slug || !isValidCategory(category)) {
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
   }
+
+  // TODO: persist seoTitle, seoDescription, featured, trending, and uploaded cover assets
+  // when the Supabase schema is expanded for richer newsroom metadata.
 
   const { data, error } = await supabase
     .from("articles")

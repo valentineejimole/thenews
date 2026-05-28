@@ -16,8 +16,9 @@ export default async function NewAdminArticlePage() {
   return (
     <AdminShell
       title="Create article"
-      description="Start a draft with the core publishing fields in place and save directly into Supabase."
+      description="Compose, package, optimize, and schedule a new NewsPressal story from a newsroom-grade editing workspace."
       showLogout
+      eyebrow="Publishing Desk"
     >
       <AdminArticleForm article={getEmptyAdminArticle()} submitLabel="Create article" mode="create" />
     </AdminShell>
