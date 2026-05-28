@@ -1,0 +1,54 @@
+import { notFound, redirect } from "next/navigation";
+import { AdminArticleForm } from "@/components/admin-article-form";
+import { AdminShell } from "@/components/admin-shell";
+import { buildAdminMetadata } from "@/lib/admin";
+import {
+  canManageAllArticles,
+  canManageDrafts,
+  getAuthenticatedProfile,
+  mapSupabaseArticleToAdminRecord,
+} from "@/lib/articles";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return buildAdminMetadata(`Edit Article | ${id}`, `/admin/articles/${id}/edit`);
+}
+
+export default async function EditAdminArticlePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const { user, profile, supabase } = await getAuthenticatedProfile();
+
+  if (!user || !supabase || !canManageDrafts(profile?.role)) {
+    redirect("/admin/login");
+  }
+
+  const { data } = await supabase.from("articles").select("*").eq("id", id).maybeSingle();
+
+  if (!data) {
+    notFound();
+  }
+
+  if (!canManageAllArticles(profile?.role) && data.author_id !== user.id) {
+    redirect("/admin/dashboard");
+  }
+
+  const article = mapSupabaseArticleToAdminRecord(data);
+
+  return (
+    <AdminShell
+      title="Edit article"
+      description="Adjust story packaging, publishing status, and article body, then save the changes back to Supabase."
+      showLogout
+    >
+      <AdminArticleForm article={article} submitLabel="Update article" mode="edit" />
+    </AdminShell>
+  );
+}
