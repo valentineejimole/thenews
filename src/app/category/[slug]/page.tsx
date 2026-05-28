@@ -49,8 +49,8 @@ export default async function CategoryPage({
 
   const allArticles = await getPublicArticles();
   const stories = allArticles.filter((article) => article.category === category);
-  const leadStory = stories[0];
-  const secondaryStories = stories.slice(1);
+  const leadStory = stories.find((article) => article.featured) ?? stories[0];
+  const secondaryStories = stories.filter((article) => article.slug !== leadStory?.slug);
   const trendingArticles = allArticles
     .slice()
     .sort((a, b) => b.trendingScore - a.trendingScore)

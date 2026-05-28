@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AdminRichTextEditor } from "@/components/admin-rich-text-editor";
 import { slugifyAdminTitle, type AdminArticleRecord } from "@/lib/admin";
 import { categories } from "@/lib/news-data";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const authorOptions = [
   "NewsPressal Staff",
@@ -48,18 +49,25 @@ export function AdminArticleForm({
   const [seoDescriptionEdited, setSeoDescriptionEdited] = useState(Boolean(article.seoDescription));
   const [featured, setFeatured] = useState(Boolean(article.featured));
   const [trending, setTrending] = useState(Boolean(article.trending));
+  const [coverAlt, setCoverAlt] = useState(article.coverAlt ?? "");
+  const [readingTime, setReadingTime] = useState(article.readingTime?.toString() ?? "");
+  const [editorNote, setEditorNote] = useState(article.editorNote ?? "");
   const [coverPreview, setCoverPreview] = useState(article.coverImageUrl);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const slug = slugEdited ? manualSlug : slugifyAdminTitle(title);
   const seoTitle = seoTitleEdited ? manualSeoTitle : title;
   const seoDescription = seoDescriptionEdited ? manualSeoDescription : excerpt;
-
+  const estimatedReadingTime = useMemo(() => {
+    const words = content.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(3, Math.round(words / 180));
+  }, [content]);
   const previewBlocks = useMemo(() => formatPreviewContent(content), [content]);
 
-  function handleCoverUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleCoverUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -68,7 +76,41 @@ export function AdminArticleForm({
 
     const objectUrl = URL.createObjectURL(file);
     setCoverPreview(objectUrl);
-    setMessage("Local cover preview loaded. TODO: connect file upload to Supabase Storage.");
+    setError("");
+    setMessage("");
+    setIsUploadingCover(true);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+
+      if (!supabase) {
+        setError("Supabase is not configured for cover uploads.");
+        return;
+      }
+
+      const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const safeBaseName = slug || slugifyAdminTitle(file.name.replace(/\.[^.]+$/, "")) || "article-cover";
+      const path = `${safeBaseName}-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("article-covers").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+      if (uploadError) {
+        setError(uploadError.message || "Unable to upload cover image.");
+        return;
+      }
+
+      const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
+      setCoverImageUrl(data.publicUrl);
+      setCoverPreview(data.publicUrl);
+      setMessage("Cover image uploaded.");
+    } catch {
+      setError("Unable to upload cover image.");
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+      setIsUploadingCover(false);
+    }
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -91,6 +133,9 @@ export function AdminArticleForm({
       seoDescription,
       featured,
       trending,
+      coverAlt,
+      readingTime: readingTime ? Number(readingTime) : null,
+      editorNote,
     };
 
     const endpoint =
@@ -232,7 +277,7 @@ export function AdminArticleForm({
                     {content.trim().split(/\s+/).filter(Boolean).length} words
                   </p>
                   <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">
-                    {Math.max(3, Math.round(content.trim().split(/\s+/).filter(Boolean).length / 180))} min read
+                    {readingTime || estimatedReadingTime} min read
                   </p>
                 </div>
               </div>
@@ -277,6 +322,30 @@ export function AdminArticleForm({
                 placeholder="Search result summary"
                 rows={4}
                 className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
+              />
+            </label>
+          </div>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_10rem]">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">Editor note</span>
+              <textarea
+                value={editorNote}
+                onChange={(event) => setEditorNote(event.target.value)}
+                placeholder="Internal note for editors and publishing workflow"
+                rows={4}
+                className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm leading-7 text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">Reading time</span>
+              <input
+                type="number"
+                min="1"
+                value={readingTime}
+                onChange={(event) => setReadingTime(event.target.value)}
+                placeholder={String(estimatedReadingTime)}
+                className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
               />
             </label>
           </div>
@@ -358,6 +427,11 @@ export function AdminArticleForm({
               />
             </label>
 
+            <p className="rounded-[1.25rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)] px-4 py-3 text-sm leading-6 text-[var(--text-muted)]">
+              Published stories go live immediately unless a future scheduler date is set. Scheduled
+              stories remain hidden on the public site until that time arrives.
+            </p>
+
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex items-center justify-between rounded-[1.35rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)] px-4 py-3">
                 <span>
@@ -411,14 +485,32 @@ export function AdminArticleForm({
             </label>
 
             <label className="grid gap-2">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">Cover image alt text</span>
+              <input
+                type="text"
+                value={coverAlt}
+                onChange={(event) => setCoverAlt(event.target.value)}
+                placeholder="Describe the cover image for accessibility"
+                className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
+              />
+            </label>
+
+            <label className="grid gap-2">
               <span className="text-sm font-semibold text-[var(--text-primary)]">Article cover upload</span>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleCoverUpload}
+                disabled={isUploadingCover}
                 className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-subtle)] px-4 py-3 text-sm text-[var(--text-muted)]"
               />
             </label>
+
+            <p className="text-sm text-[var(--text-muted)]">
+              {isUploadingCover
+                ? "Uploading cover to Supabase Storage..."
+                : "Upload to the article-covers bucket or paste a direct image URL above."}
+            </p>
 
             <div className="overflow-hidden rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)]">
               <div className="aspect-[16/10] bg-[linear-gradient(135deg,rgba(179,143,69,0.18),rgba(23,48,79,0.08))]">
@@ -431,7 +523,7 @@ export function AdminArticleForm({
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center px-6 text-center text-sm text-[var(--text-soft)]">
-                    Cover preview appears here. Upload support is staged for Supabase Storage next.
+                    Cover preview appears here after upload or when a valid image URL is provided.
                   </div>
                 )}
               </div>
@@ -475,8 +567,8 @@ export function AdminArticleForm({
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-subtle)] p-4 text-sm leading-7 text-[var(--text-muted)]">
-            TODO: persist featured/trending flags, SEO fields, author assignment, and cover uploads in
-            Supabase schema and storage when the newsroom data model expands.
+            Featured, trending, SEO, cover alt text, reading time, editor notes, and scheduled
+            publishing are saved to Supabase. Cover uploads use the public `article-covers` bucket.
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">

@@ -8,6 +8,7 @@ type ArticlePayload = {
   category?: string;
   excerpt?: string;
   coverImageUrl?: string;
+  coverAlt?: string;
   content?: string;
   author?: string;
   status?: "draft" | "published";
@@ -16,10 +17,36 @@ type ArticlePayload = {
   seoDescription?: string;
   featured?: boolean;
   trending?: boolean;
+  readingTime?: number | null;
+  editorNote?: string;
 };
 
 function isValidCategory(value: string) {
   return categories.includes(value as (typeof categories)[number]);
+}
+
+function toIsoOrNull(value?: string | null) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = new Date(trimmed);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+function normalizeReadingTime(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return Math.round(value);
 }
 
 export async function PATCH(
@@ -53,13 +80,15 @@ export async function PATCH(
   const content = body.content?.trim() ?? "";
   const category = body.category?.trim() ?? "";
   const status = body.status === "published" ? "published" : "draft";
+  const scheduledAt = toIsoOrNull(body.publishDate);
+  const publishedAt =
+    status === "published"
+      ? scheduledAt ?? existing.published_at ?? new Date().toISOString()
+      : null;
 
   if (!title || !content || !slug || !isValidCategory(category)) {
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
   }
-
-  // TODO: persist seoTitle, seoDescription, featured, trending, and uploaded cover assets
-  // when the Supabase schema is expanded for richer newsroom metadata.
 
   const { error } = await supabase
     .from("articles")
@@ -69,15 +98,18 @@ export async function PATCH(
       category,
       excerpt: body.excerpt?.trim() || null,
       cover_image_url: body.coverImageUrl?.trim() || null,
+      cover_alt: body.coverAlt?.trim() || null,
       content,
       author_name: body.author?.trim() || existing.author_name,
       status,
-      published_at:
-        status === "published"
-          ? body.publishDate
-            ? new Date(body.publishDate).toISOString()
-            : existing.published_at || new Date().toISOString()
-          : null,
+      seo_title: body.seoTitle?.trim() || null,
+      seo_description: body.seoDescription?.trim() || null,
+      is_featured: Boolean(body.featured),
+      is_trending: Boolean(body.trending),
+      scheduled_at: scheduledAt,
+      reading_time: normalizeReadingTime(body.readingTime),
+      editor_note: body.editorNote?.trim() || null,
+      published_at: publishedAt,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);

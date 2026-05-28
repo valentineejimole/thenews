@@ -18,6 +18,9 @@ export type AdminArticleRecord = {
   seoDescription?: string;
   featured?: boolean;
   trending?: boolean;
+  coverAlt?: string;
+  readingTime?: number | null;
+  editorNote?: string;
 };
 
 export function getEmptyAdminArticle(): AdminArticleRecord {
@@ -36,6 +39,9 @@ export function getEmptyAdminArticle(): AdminArticleRecord {
     seoDescription: "",
     featured: false,
     trending: false,
+    coverAlt: "",
+    readingTime: null,
+    editorNote: "",
   };
 }
 

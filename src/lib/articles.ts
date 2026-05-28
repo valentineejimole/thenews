@@ -27,6 +27,32 @@ function buildSourceLabel(category: Category) {
   return `NewsPressal ${category} Desk`;
 }
 
+function toIsoOrNull(value?: string | null) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = new Date(trimmed);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+function toDateTimeLocalValue(value?: string | null) {
+  const iso = toIsoOrNull(value);
+
+  if (!iso) {
+    return "";
+  }
+
+  return iso.slice(0, 16);
+}
+
 function estimateReadTime(content: string) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
   const minutes = Math.max(3, Math.round(words / 180));
@@ -49,9 +75,32 @@ function buildExcerpt(content: string, excerpt?: string | null) {
   return normalized.length > 180 ? `${normalized.slice(0, 177)}...` : normalized;
 }
 
+function buildReadTime(content: string, readingTime?: number | null) {
+  if (typeof readingTime === "number" && Number.isFinite(readingTime) && readingTime > 0) {
+    return `${readingTime} min read`;
+  }
+
+  return estimateReadTime(content);
+}
+
+function isScheduledReady(row: Pick<SupabaseArticleRow, "scheduled_at" | "status">, now = new Date()) {
+  if (row.status !== "published") {
+    return false;
+  }
+
+  if (!row.scheduled_at) {
+    return true;
+  }
+
+  return new Date(row.scheduled_at).getTime() <= now.getTime();
+}
+
 function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
   const category = normalizeCategory(row.category);
   const content = splitContent(row.content);
+  const featured = Boolean(row.is_featured);
+  const trending = Boolean(row.is_trending);
+  const publishedAt = row.scheduled_at ?? row.published_at ?? row.created_at;
 
   return {
     slug: row.slug,
@@ -63,20 +112,24 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
     authorRole: "Staff Writer",
     authorBio:
       "NewsPressal contributors report across politics, business, technology, sports, culture, and opinion.",
-    publishedAt: row.published_at ?? row.created_at,
+    publishedAt,
     updatedAt: row.updated_at,
-    readTime: estimateReadTime(row.content),
+    readTime: buildReadTime(row.content, row.reading_time),
     image: row.cover_image_url?.trim() || fallbackImages.get(category) || mockArticles[0].image,
-    imageAlt: row.title,
+    imageAlt: row.cover_alt?.trim() || row.title,
+    seoTitle: row.seo_title?.trim() || row.title,
+    seoDescription: row.seo_description?.trim() || buildExcerpt(row.content, row.excerpt),
+    editorNote: row.editor_note?.trim() || undefined,
+    scheduledAt: row.scheduled_at ?? undefined,
     source: buildSourceLabel(category),
     location: "Global Desk",
-    featured: index === 0,
+    featured: featured || index === 0,
     breaking: index < 2,
-    editorPick: index < 4,
+    editorPick: featured || index < 4,
     marketWatch: category === "Business" && index < 3,
     weekendRead: content.join(" ").length > 1200,
     video: false,
-    trendingScore: Math.max(60, 100 - index),
+    trendingScore: Math.max(60, 100 - index + (featured ? 8 : 0) + (trending ? 12 : 0)),
     tags: [category.toLowerCase(), "newspressal", "analysis"],
   };
 }
@@ -99,7 +152,8 @@ async function fetchPublishedSupabaseArticlesInternal() {
     return [];
   }
 
-  return data as SupabaseArticleRow[];
+  const now = new Date();
+  return (data as SupabaseArticleRow[]).filter((row) => isScheduledReady(row, now));
 }
 
 export const fetchPublishedSupabaseArticles = cache(fetchPublishedSupabaseArticlesInternal);
@@ -112,7 +166,12 @@ export async function getPublicArticles() {
   }
 
   const supabaseSlugs = new Set(supabaseArticles.map((article) => article.slug));
-  const remainingMockArticles = mockArticles.filter((article) => !supabaseSlugs.has(article.slug));
+  const remainingMockArticles = mockArticles
+    .filter((article) => !supabaseSlugs.has(article.slug))
+    .map((article) => ({
+      ...article,
+      featured: false,
+    }));
   return [...supabaseArticles, ...remainingMockArticles];
 }
 
@@ -127,7 +186,7 @@ export async function getPublicArticleBySlug(slug: string) {
       .eq("status", "published")
       .maybeSingle();
 
-    if (data) {
+    if (data && isScheduledReady(data as SupabaseArticleRow)) {
       return mapSupabaseArticle(data as SupabaseArticleRow, 0);
     }
   }
@@ -240,10 +299,13 @@ export function mapSupabaseArticleToAdminRecord(row: SupabaseArticleRow): AdminA
     content: row.content,
     author: row.author_name ?? "",
     status: row.status,
-    publishDate: (row.published_at ?? row.created_at).slice(0, 16),
-    seoTitle: row.title,
-    seoDescription: row.excerpt ?? "",
-    featured: false,
-    trending: row.status === "published",
+    publishDate: toDateTimeLocalValue(row.scheduled_at ?? row.published_at ?? row.created_at),
+    seoTitle: row.seo_title ?? row.title,
+    seoDescription: row.seo_description ?? row.excerpt ?? "",
+    featured: Boolean(row.is_featured),
+    trending: Boolean(row.is_trending),
+    coverAlt: row.cover_alt ?? "",
+    readingTime: row.reading_time,
+    editorNote: row.editor_note ?? "",
   };
 }

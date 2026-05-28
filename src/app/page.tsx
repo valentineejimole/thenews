@@ -26,7 +26,7 @@ const marketSnapshot = [
 
 export default async function HomePage() {
   const publicArticles = await getPublicArticles();
-  const featuredArticle = publicArticles[0];
+  const featuredArticle = publicArticles.find((article) => article.featured) ?? publicArticles[0];
   const trendingArticles = [...publicArticles]
     .sort((a, b) => b.trendingScore - a.trendingScore)
     .slice(0, 5);
@@ -34,7 +34,7 @@ export default async function HomePage() {
     .filter((article) => article.slug !== featuredArticle.slug)
     .slice(0, 6);
   const editorPicks = publicArticles
-    .filter((article) => article.slug !== featuredArticle.slug && article.editorPick)
+    .filter((article) => article.slug !== featuredArticle.slug && (article.editorPick || article.featured))
     .slice(0, 4);
   const marketWatch = publicArticles
     .filter((article) => article.marketWatch || article.category === "Business")

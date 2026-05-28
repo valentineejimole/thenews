@@ -23,6 +23,10 @@ export type Article = {
   readTime: string;
   image: string;
   imageAlt: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  editorNote?: string;
+  scheduledAt?: string;
   source: string;
   location: string;
   featured?: boolean;

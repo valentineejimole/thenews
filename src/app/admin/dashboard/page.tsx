@@ -174,9 +174,9 @@ export default async function AdminDashboardPage() {
             </div>
 
             <div className="rounded-[1.75rem] border border-dashed border-[var(--border-strong)] bg-[var(--surface-raised)] p-6 text-sm leading-7 text-[var(--text-muted)]">
-              Connected to Supabase Auth and the `articles` table. Featured/trending flags, SEO
-              controls, and richer editorial metadata are staged in the CMS UI and ready for schema
-              expansion.
+              Connected to Supabase Auth, the `articles` table, and the `article-covers` storage
+              bucket. Featured/trending priority, SEO metadata, editor notes, and scheduled
+              publishing now persist through the newsroom workflow.
             </div>
           </aside>
         </div>
