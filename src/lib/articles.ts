@@ -307,5 +307,6 @@ export function mapSupabaseArticleToAdminRecord(row: SupabaseArticleRow): AdminA
     coverAlt: row.cover_alt ?? "",
     readingTime: row.reading_time,
     editorNote: row.editor_note ?? "",
+    updatedAt: row.updated_at,
   };
 }

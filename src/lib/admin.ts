@@ -21,6 +21,7 @@ export type AdminArticleRecord = {
   coverAlt?: string;
   readingTime?: number | null;
   editorNote?: string;
+  updatedAt?: string;
 };
 
 export function getEmptyAdminArticle(): AdminArticleRecord {
@@ -42,6 +43,7 @@ export function getEmptyAdminArticle(): AdminArticleRecord {
     coverAlt: "",
     readingTime: null,
     editorNote: "",
+    updatedAt: new Date().toISOString(),
   };
 }
 

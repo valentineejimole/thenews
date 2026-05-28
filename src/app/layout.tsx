@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Newsreader, Public_Sans } from "next/font/google";
-import { BreakingTicker } from "@/components/breaking-ticker";
-import { ReadingProgress } from "@/components/reading-progress";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { AppChrome } from "@/components/app-chrome";
 import { getPublicArticles } from "@/lib/articles";
 import { buildMetadata, siteDescription, siteName } from "@/lib/news";
 import "./globals.css";
@@ -61,12 +58,7 @@ export default async function RootLayout({
         <Script id="theme-script" strategy="beforeInteractive">
           {themeScript}
         </Script>
-        <ReadingProgress />
-        <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(circle_at_top,rgba(179,147,72,0.18),transparent_58%)]" />
-        <BreakingTicker articles={tickerArticles} />
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
+        <AppChrome tickerArticles={tickerArticles}>{children}</AppChrome>
       </body>
     </html>
   );

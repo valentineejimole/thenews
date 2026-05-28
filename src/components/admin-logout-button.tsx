@@ -17,7 +17,7 @@ export function AdminLogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="rounded-full border border-[var(--border-subtle)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      className="rounded-full border border-[var(--border-subtle)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
     >
       Log out
     </button>

@@ -48,39 +48,45 @@ export function AdminLoginForm({ nextPath }: { nextPath: string }) {
   }
 
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit}>
+    <form className="grid gap-4" onSubmit={handleSubmit}>
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[var(--text-primary)]">Email</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]">
+          Email
+        </span>
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="editor@newspressal.example"
-          className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
+          className="rounded-[1.25rem] border border-[var(--border-subtle)] bg-white px-4 py-3.5 text-sm text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent)_16%,transparent)]"
         />
       </label>
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[var(--text-primary)]">Password</span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-soft)]">
+          Password
+        </span>
         <input
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Enter password"
-          className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
+          className="rounded-[1.25rem] border border-[var(--border-subtle)] bg-white px-4 py-3.5 text-sm text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent)_16%,transparent)]"
         />
       </label>
       <button
         type="submit"
         disabled={status === "loading"}
-        className="rounded-full bg-[var(--text-primary)] px-5 py-3 text-sm font-semibold text-[var(--site-bg)] transition hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-1 rounded-full bg-[var(--text-primary)] px-5 py-3.5 text-sm font-semibold text-[var(--site-bg)] shadow-[0_14px_30px_rgba(15,23,42,0.16)] transition hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "loading" ? "Signing in..." : "Sign in"}
+        {status === "loading" ? "Signing in..." : "Enter CMS"}
       </button>
       <p
         aria-live="polite"
-        className={`text-sm ${status === "error" ? "text-[var(--signal)]" : "text-[var(--text-muted)]"}`}
+        className={`min-h-[1.5rem] text-sm ${
+          status === "error" ? "text-[var(--signal)]" : "text-emerald-700"
+        }`}
       >
-        {message || "Use your Supabase Auth email and password to access the newsroom."}
+        {message}
       </p>
     </form>
   );
