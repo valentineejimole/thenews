@@ -2,7 +2,7 @@ import { cache } from "react";
 import { articles as mockArticles, categories, type Article, type Category } from "@/lib/news-data";
 import type { AdminArticleRecord } from "@/lib/admin";
 import type { SupabaseArticleRow, SupabaseProfile, SupabaseProfileRole } from "@/lib/supa-types";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicClient, createSupabaseServerClient } from "@/lib/supabase/server";
 
 const fallbackImages = new Map<Category, string>(
   categories.map((category) => [
@@ -82,7 +82,7 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
 }
 
 async function fetchPublishedSupabaseArticlesInternal() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabasePublicClient();
 
   if (!supabase) {
     return [];
@@ -117,7 +117,7 @@ export async function getPublicArticles() {
 }
 
 export async function getPublicArticleBySlug(slug: string) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabasePublicClient();
 
   if (supabase) {
     const { data } = await supabase
