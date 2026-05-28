@@ -5,20 +5,20 @@ import Image from "next/image";
 
 const FALLBACK_IMAGE = "/article-fallback.svg";
 
-export function NewsImage({
+function NewsImageInner({
   src,
   alt,
   priority = false,
   sizes,
   className,
 }: {
-  src?: string | null;
+  src: string;
   alt: string;
   priority?: boolean;
   sizes: string;
   className?: string;
 }) {
-  const [imageSrc, setImageSrc] = useState(src?.trim() || FALLBACK_IMAGE);
+  const [imageSrc, setImageSrc] = useState(src);
 
   return (
     <Image
@@ -33,6 +33,33 @@ export function NewsImage({
           setImageSrc(FALLBACK_IMAGE);
         }
       }}
+    />
+  );
+}
+
+export function NewsImage({
+  src,
+  alt,
+  priority = false,
+  sizes,
+  className,
+}: {
+  src?: string | null;
+  alt: string;
+  priority?: boolean;
+  sizes: string;
+  className?: string;
+}) {
+  const normalizedSrc = src?.trim() || FALLBACK_IMAGE;
+
+  return (
+    <NewsImageInner
+      key={normalizedSrc}
+      src={normalizedSrc}
+      alt={alt}
+      priority={priority}
+      sizes={sizes}
+      className={className}
     />
   );
 }

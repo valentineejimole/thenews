@@ -62,6 +62,35 @@ function normalizeReadingTime(value?: number | null) {
   return Math.round(value);
 }
 
+function normalizeCoverImageUrl(value?: string | null) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (
+    trimmed.startsWith("blob:") ||
+    trimmed.startsWith("data:") ||
+    trimmed.includes("localhost") ||
+    trimmed.includes("127.0.0.1")
+  ) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return null;
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 function normalizeHomepagePriority(value?: number | null) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return 100;
@@ -91,6 +120,7 @@ export async function POST(request: Request) {
   const publishedAt = status === "published" ? scheduledAt ?? new Date().toISOString() : null;
   const homepagePlacement = normalizeHomepagePlacement(body.homepagePlacement);
   const showOnHomepage = Boolean(body.showOnHomepage);
+  const coverImageUrl = normalizeCoverImageUrl(body.coverImageUrl);
 
   if (!title || !content || !slug || !isValidCategory(category)) {
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
@@ -103,7 +133,7 @@ export async function POST(request: Request) {
       slug,
       category,
       excerpt: body.excerpt?.trim() || null,
-      cover_image_url: body.coverImageUrl?.trim() || null,
+      cover_image_url: coverImageUrl,
       cover_alt: body.coverAlt?.trim() || null,
       content,
       author_id: user.id,

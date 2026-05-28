@@ -124,7 +124,7 @@ export function AdminArticleForm({
       const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
       setCoverImageUrl(data.publicUrl);
       setCoverPreview(data.publicUrl);
-      setMessage("Cover image uploaded.");
+      setMessage("Cover uploaded successfully.");
     } catch {
       setError("Unable to upload cover image.");
     } finally {
@@ -592,7 +592,9 @@ export function AdminArticleForm({
             <p className="text-sm text-[var(--text-muted)]">
               {isUploadingCover
                 ? "Uploading cover to Supabase Storage..."
-                : "Upload to the article-covers bucket or paste a direct image URL above."}
+                : coverImageUrl
+                  ? "Uploaded cover will publish using the saved public image URL."
+                  : "Upload to the article-covers bucket or paste a direct image URL above."}
             </p>
 
             <div className="overflow-hidden rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)]">
