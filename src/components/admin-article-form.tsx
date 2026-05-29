@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { AdminRichTextEditor } from "@/components/admin-rich-text-editor";
 import {
@@ -77,6 +77,8 @@ export function AdminArticleForm({
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState("");
+  const [coverUploadSuccess, setCoverUploadSuccess] = useState("");
 
   const slug = slugEdited ? manualSlug : slugifyAdminTitle(title);
   const seoTitle = seoTitleEdited ? manualSeoTitle : title;
@@ -87,7 +89,7 @@ export function AdminArticleForm({
   }, [content]);
   const previewBlocks = useMemo(() => formatPreviewContent(content), [content]);
 
-  async function handleCoverUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleCoverUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -95,46 +97,63 @@ export function AdminArticleForm({
     }
 
     const objectUrl = URL.createObjectURL(file);
+    const previousCoverImageUrl = coverImageUrl.trim();
+    const previousCoverPreview = coverPreview.trim();
     setCoverPreview(objectUrl);
-    setError("");
-    setMessage("");
+    setCoverUploadError("");
+    setCoverUploadSuccess("");
     setIsUploadingCover(true);
 
     try {
       const supabase = createSupabaseBrowserClient();
 
       if (!supabase) {
-        setError("Supabase is not configured for cover uploads.");
+        setCoverPreview(previousCoverPreview || previousCoverImageUrl);
+        setCoverUploadError("Supabase is not configured for cover uploads.");
         return;
       }
 
-      const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const safeBaseName = slug || slugifyAdminTitle(file.name.replace(/\.[^.]+$/, "")) || "article-cover";
-      const path = `${safeBaseName}-${Date.now()}.${extension}`;
+      const path = `covers/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from("article-covers").upload(path, file, {
         cacheControl: "3600",
         upsert: false,
       });
 
       if (uploadError) {
-        setError(uploadError.message || "Unable to upload cover image.");
+        setCoverPreview(previousCoverPreview || previousCoverImageUrl);
+        setCoverUploadError(uploadError.message || "Unable to upload cover image.");
         return;
       }
 
       const { data } = supabase.storage.from("article-covers").getPublicUrl(path);
-      setCoverImageUrl(data.publicUrl);
-      setCoverPreview(data.publicUrl);
-      setMessage("Cover uploaded successfully.");
+      const publicUrl = data.publicUrl?.trim();
+
+      if (!publicUrl) {
+        setCoverPreview(previousCoverPreview || previousCoverImageUrl);
+        setCoverUploadError("Unable to resolve the uploaded cover image URL.");
+        return;
+      }
+
+      setCoverImageUrl(publicUrl);
+      setCoverPreview(publicUrl);
+      setCoverUploadSuccess("Cover uploaded successfully");
     } catch {
-      setError("Unable to upload cover image.");
+      setCoverPreview(previousCoverPreview || previousCoverImageUrl);
+      setCoverUploadError("Unable to upload cover image.");
     } finally {
+      event.target.value = "";
       URL.revokeObjectURL(objectUrl);
       setIsUploadingCover(false);
     }
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isUploadingCover) {
+      setError("Please wait for the cover upload to finish before saving.");
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage("");
     setError("");
@@ -561,6 +580,8 @@ export function AdminArticleForm({
                 onChange={(event) => {
                   setCoverImageUrl(event.target.value);
                   setCoverPreview(event.target.value);
+                  setCoverUploadError("");
+                  setCoverUploadSuccess("");
                 }}
                 placeholder="https://example.com/image.jpg"
                 className="rounded-2xl border border-[var(--border-subtle)] bg-white px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)]"
@@ -589,16 +610,8 @@ export function AdminArticleForm({
               />
             </label>
 
-            <p className="text-sm text-[var(--text-muted)]">
-              {isUploadingCover
-                ? "Uploading cover to Supabase Storage..."
-                : coverImageUrl
-                  ? "Uploaded cover will publish using the saved public image URL."
-                  : "Upload to the article-covers bucket or paste a direct image URL above."}
-            </p>
-
             <div className="overflow-hidden rounded-[1.5rem] border border-[var(--border-subtle)] bg-[var(--surface-subtle)]">
-              <div className="aspect-[16/10] bg-[linear-gradient(135deg,rgba(179,143,69,0.18),rgba(23,48,79,0.08))]">
+              <div className="aspect-[16/9] bg-[linear-gradient(135deg,rgba(179,143,69,0.18),rgba(23,48,79,0.08))]">
                 {coverPreview ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -612,6 +625,33 @@ export function AdminArticleForm({
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <p className="text-sm text-[var(--text-muted)]">
+                {coverImageUrl
+                  ? "Uploaded cover will publish using the saved public image URL."
+                  : "Upload to the article-covers bucket or paste a direct image URL above."}
+              </p>
+              {isUploadingCover ? (
+                <div className="flex items-center gap-2 text-sm text-[var(--text-primary)]" aria-live="polite">
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--border-subtle)] border-t-[var(--accent)]"
+                    aria-hidden="true"
+                  />
+                  Uploading cover to Supabase Storage...
+                </div>
+              ) : null}
+              {coverUploadSuccess ? (
+                <p aria-live="polite" className="text-sm text-emerald-600">
+                  {coverUploadSuccess}
+                </p>
+              ) : null}
+              {coverUploadError ? (
+                <p role="alert" className="text-sm text-[var(--signal)]">
+                  {coverUploadError}
+                </p>
+              ) : null}
             </div>
           </div>
         </section>
@@ -659,10 +699,10 @@ export function AdminArticleForm({
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingCover}
               className="rounded-full bg-[var(--text-primary)] px-5 py-3 text-sm font-semibold text-[var(--site-bg)] transition hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Saving..." : submitLabel}
+              {isSubmitting ? "Saving..." : isUploadingCover ? "Uploading cover..." : submitLabel}
             </button>
             <button
               type="button"

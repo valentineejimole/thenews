@@ -9,7 +9,9 @@ type ArticlePayload = {
   category?: string;
   excerpt?: string;
   coverImageUrl?: string;
+  cover_image_url?: string;
   coverAlt?: string;
+  cover_image_alt?: string;
   content?: string;
   author?: string;
   status?: "draft" | "published";
@@ -120,7 +122,8 @@ export async function POST(request: Request) {
   const publishedAt = status === "published" ? scheduledAt ?? new Date().toISOString() : null;
   const homepagePlacement = normalizeHomepagePlacement(body.homepagePlacement);
   const showOnHomepage = Boolean(body.showOnHomepage);
-  const coverImageUrl = normalizeCoverImageUrl(body.coverImageUrl);
+  const coverImageUrl = normalizeCoverImageUrl(body.coverImageUrl ?? body.cover_image_url);
+  const coverAlt = body.coverAlt ?? body.cover_image_alt;
 
   if (!title || !content || !slug || !isValidCategory(category)) {
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
@@ -134,7 +137,7 @@ export async function POST(request: Request) {
       category,
       excerpt: body.excerpt?.trim() || null,
       cover_image_url: coverImageUrl,
-      cover_alt: body.coverAlt?.trim() || null,
+      cover_alt: coverAlt?.trim() || null,
       content,
       author_id: user.id,
       author_name: body.author?.trim() || profile?.full_name || user.email || "NewsPressal Staff",
