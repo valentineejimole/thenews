@@ -49,7 +49,12 @@ export default async function EditAdminArticlePage({
       showLogout
       eyebrow="Publishing Desk"
     >
-      <AdminArticleForm article={article} submitLabel="Update article" mode="edit" />
+      <AdminArticleForm
+        key={`${article.id}:${article.updatedAt ?? article.coverImageUrl}`}
+        article={article}
+        submitLabel="Update article"
+        mode="edit"
+      />
     </AdminShell>
   );
 }

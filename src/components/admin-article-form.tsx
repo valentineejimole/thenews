@@ -73,6 +73,7 @@ export function AdminArticleForm({
     article.homepagePlacement ?? "none",
   );
   const [coverPreview, setCoverPreview] = useState(article.coverImageUrl);
+  const [coverPreviewKey, setCoverPreviewKey] = useState(0);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +89,15 @@ export function AdminArticleForm({
     return Math.max(3, Math.round(words / 180));
   }, [content]);
   const previewBlocks = useMemo(() => formatPreviewContent(content), [content]);
+
+  function applyCoverUploadResult(publicUrl: string) {
+    setCoverImageUrl(publicUrl);
+    setCoverPreview("");
+    setCoverPreviewKey((current) => current + 1);
+    requestAnimationFrame(() => {
+      setCoverPreview(publicUrl);
+    });
+  }
 
   async function handleCoverUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -134,8 +144,13 @@ export function AdminArticleForm({
         return;
       }
 
-      setCoverImageUrl(publicUrl);
-      setCoverPreview(publicUrl);
+      console.info("[article-cover] uploaded public URL", {
+        articleId: article.id,
+        mode,
+        path,
+        publicUrl,
+      });
+      applyCoverUploadResult(publicUrl);
       setCoverUploadSuccess("Cover uploaded successfully");
     } catch {
       setCoverPreview(previousCoverPreview || previousCoverImageUrl);
@@ -180,6 +195,12 @@ export function AdminArticleForm({
       editorNote,
     };
 
+    console.info("[article-cover] submitting latest cover URL", {
+      articleId: article.id,
+      mode,
+      coverImageUrl,
+    });
+
     const endpoint =
       mode === "create" ? "/api/admin/articles" : `/api/admin/articles/${article.id}`;
     const method = mode === "create" ? "POST" : "PATCH";
@@ -196,6 +217,10 @@ export function AdminArticleForm({
       const data = (await response.json()) as {
         error?: string;
         success?: string;
+        article?: {
+          cover_image_url?: string | null;
+          updated_at?: string | null;
+        };
       };
 
       if (!response.ok) {
@@ -209,6 +234,10 @@ export function AdminArticleForm({
         return;
       }
 
+      const savedCoverImageUrl = data.article?.cover_image_url?.trim();
+      if (savedCoverImageUrl) {
+        applyCoverUploadResult(savedCoverImageUrl);
+      }
       setMessage(data.success ?? "Article updated.");
       router.refresh();
     } catch {
@@ -580,6 +609,7 @@ export function AdminArticleForm({
                 onChange={(event) => {
                   setCoverImageUrl(event.target.value);
                   setCoverPreview(event.target.value);
+                  setCoverPreviewKey((current) => current + 1);
                   setCoverUploadError("");
                   setCoverUploadSuccess("");
                 }}
@@ -615,6 +645,7 @@ export function AdminArticleForm({
                 {coverPreview ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
+                    key={coverPreviewKey}
                     src={coverPreview}
                     alt="Article cover preview"
                     className="h-full w-full object-cover"

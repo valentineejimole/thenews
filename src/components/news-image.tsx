@@ -72,8 +72,14 @@ export function NewsImage({
     console.warn(`NewsImage received an invalid src: ${trimmedSrc}`);
   }
 
+  console.info("[article-image] NewsImage render", {
+    src: normalizedSrc,
+    alt,
+  });
+
   return (
     <NewsImageInner
+      key={normalizedSrc}
       src={normalizedSrc}
       alt={alt}
       priority={priority}

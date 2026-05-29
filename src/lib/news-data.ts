@@ -44,8 +44,38 @@ export type Article = {
   tags: string[];
 };
 
+function isSupabaseStorageUrl(value: string) {
+  return value.includes("/storage/v1/object/public/article-covers/");
+}
+
+function appendImageVersion(url: string, version: string) {
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set("v", version);
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 export function resolveArticleImageSrc(article: Article) {
-  return article.coverImageUrl?.trim() || article.cover_image_url?.trim() || article.image?.trim() || "";
+  const coverImageUrl = article.coverImageUrl?.trim() || article.cover_image_url?.trim() || "";
+  const fallbackImage = article.image?.trim() || "";
+  const version = article.updatedAt?.trim() || article.publishedAt?.trim() || Date.now().toString();
+  const resolvedSrc = coverImageUrl
+    ? isSupabaseStorageUrl(coverImageUrl)
+      ? appendImageVersion(coverImageUrl, version)
+      : coverImageUrl
+    : fallbackImage;
+
+  console.info("[article-image] resolved frontend value", {
+    slug: article.slug,
+    coverImageUrl,
+    fallbackImage,
+    renderedSrc: resolvedSrc,
+  });
+
+  return resolvedSrc;
 }
 
 export const articles: Article[] = [

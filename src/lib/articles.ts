@@ -120,6 +120,13 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
   const coverImageUrl = row.cover_image_url?.trim() || "";
   const fallbackImage = fallbackImages.get(category) || mockArticles[0].image;
 
+  console.info("[article-cover] mapped article value", {
+    slug: row.slug,
+    cover_image_url: coverImageUrl,
+    fallbackImage,
+    updated_at: row.updated_at,
+  });
+
   return {
     slug: row.slug,
     title: row.title,

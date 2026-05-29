@@ -150,7 +150,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Title, slug, category, and content are required." }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { data: updatedArticle, error } = await supabase
     .from("articles")
     .update({
       title,
@@ -175,7 +175,9 @@ export async function PATCH(
       published_at: publishedAt,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id, slug, cover_image_url, updated_at")
+    .single();
 
   if (error) {
     const duplicate = error.code === "23505";
@@ -185,5 +187,12 @@ export async function PATCH(
     );
   }
 
-  return NextResponse.json({ success: "Article updated." }, { status: 200 });
+  console.info("[article-cover] saved database value", {
+    articleId: updatedArticle.id,
+    slug: updatedArticle.slug,
+    cover_image_url: updatedArticle.cover_image_url,
+    updated_at: updatedArticle.updated_at,
+  });
+
+  return NextResponse.json({ success: "Article updated.", article: updatedArticle }, { status: 200 });
 }

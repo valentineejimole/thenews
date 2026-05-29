@@ -154,7 +154,7 @@ export async function POST(request: Request) {
       editor_note: body.editorNote?.trim() || null,
       published_at: publishedAt,
     })
-    .select("id")
+    .select("id, slug, cover_image_url, updated_at")
     .single();
 
   if (error) {
@@ -165,10 +165,18 @@ export async function POST(request: Request) {
     );
   }
 
+  console.info("[article-cover] saved database value", {
+    articleId: data.id,
+    slug: data.slug,
+    cover_image_url: data.cover_image_url,
+    updated_at: data.updated_at,
+  });
+
   return NextResponse.json(
     {
       success: "Article created.",
       articleId: data.id,
+      article: data,
     },
     { status: 200 },
   );
