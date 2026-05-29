@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NewsImage } from "@/components/news-image";
-import type { Article } from "@/lib/news-data";
+import { resolveArticleImageSrc, type Article } from "@/lib/news-data";
 import { formatArticleDate, formatArticleDateTime, getCategorySlug } from "@/lib/news";
 
 export function ArticleCard({
@@ -40,7 +40,7 @@ export function ArticleCard({
             }`}
           >
             <NewsImage
-              src={article.image}
+              src={resolveArticleImageSrc(article)}
               alt={article.imageAlt}
               priority={priority}
               sizes={

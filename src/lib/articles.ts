@@ -117,6 +117,8 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
   const showOnHomepage = Boolean(row.show_on_homepage);
   const homepagePlacement = normalizeHomepagePlacement(row.homepage_placement);
   const homepagePriority = row.homepage_priority ?? 100;
+  const coverImageUrl = row.cover_image_url?.trim() || "";
+  const fallbackImage = fallbackImages.get(category) || mockArticles[0].image;
 
   return {
     slug: row.slug,
@@ -131,7 +133,9 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
     publishedAt,
     updatedAt: row.updated_at,
     readTime: buildReadTime(row.content, row.reading_time),
-    image: row.cover_image_url?.trim() || fallbackImages.get(category) || mockArticles[0].image,
+    image: coverImageUrl || fallbackImage,
+    coverImageUrl,
+    cover_image_url: coverImageUrl,
     imageAlt: row.cover_alt?.trim() || row.title,
     seoTitle: row.seo_title?.trim() || row.title,
     seoDescription: row.seo_description?.trim() || buildExcerpt(row.content, row.excerpt),

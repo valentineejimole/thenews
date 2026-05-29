@@ -11,7 +11,7 @@ import {
   getPublicRelatedArticles,
   getSupabaseArticleSlugs,
 } from "@/lib/articles";
-import { articles } from "@/lib/news-data";
+import { articles, resolveArticleImageSrc } from "@/lib/news-data";
 import {
   buildMetadata,
   formatArticleDate,
@@ -44,7 +44,7 @@ export async function generateMetadata({
     title: `${article.seoTitle || article.title} | NewsPressal`,
     description: article.seoDescription || article.excerpt,
     path: `/article/${article.slug}`,
-    image: article.image,
+    image: resolveArticleImageSrc(article),
   });
 }
 
@@ -105,7 +105,7 @@ export default async function ArticlePage({
 
             <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-[2rem] border border-[var(--border-subtle)]">
               <NewsImage
-                src={article.image}
+                src={resolveArticleImageSrc(article)}
                 alt={article.imageAlt}
                 priority
                 sizes="(min-width: 1024px) 70vw, 100vw"

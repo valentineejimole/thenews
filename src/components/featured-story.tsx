@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NewsImage } from "@/components/news-image";
-import type { Article } from "@/lib/news-data";
+import { resolveArticleImageSrc, type Article } from "@/lib/news-data";
 import { formatArticleDate, formatArticleDateTime, getCategorySlug } from "@/lib/news";
 
 export function FeaturedStory({ article }: { article: Article }) {
@@ -9,7 +9,7 @@ export function FeaturedStory({ article }: { article: Article }) {
       <div className="grid items-start xl:grid-cols-[1.08fr_0.92fr]">
         <div className="relative aspect-[16/9] overflow-hidden xl:aspect-auto xl:min-h-[100%]">
           <NewsImage
-            src={article.image}
+            src={resolveArticleImageSrc(article)}
             alt={article.imageAlt}
             priority
             sizes="(min-width: 1280px) 44rem, (min-width: 1024px) 56vw, 100vw"

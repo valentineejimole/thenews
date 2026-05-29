@@ -5,6 +5,19 @@ import Image from "next/image";
 
 const FALLBACK_IMAGE = "/article-fallback.svg";
 
+function isValidImageSrc(src: string) {
+  if (src.startsWith("/")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(src);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function NewsImageInner({
   src,
   alt,
@@ -18,7 +31,8 @@ function NewsImageInner({
   sizes: string;
   className?: string;
 }) {
-  const [imageSrc, setImageSrc] = useState(src);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const imageSrc = failedSrc === src ? FALLBACK_IMAGE : src;
 
   return (
     <Image
@@ -30,7 +44,7 @@ function NewsImageInner({
       className={className}
       onError={() => {
         if (imageSrc !== FALLBACK_IMAGE) {
-          setImageSrc(FALLBACK_IMAGE);
+          setFailedSrc(src);
         }
       }}
     />
@@ -50,11 +64,16 @@ export function NewsImage({
   sizes: string;
   className?: string;
 }) {
-  const normalizedSrc = src?.trim() || FALLBACK_IMAGE;
+  const trimmedSrc = src?.trim();
+  const normalizedSrc =
+    trimmedSrc && isValidImageSrc(trimmedSrc) ? trimmedSrc : FALLBACK_IMAGE;
+
+  if (process.env.NODE_ENV !== "production" && trimmedSrc && normalizedSrc === FALLBACK_IMAGE) {
+    console.warn(`NewsImage received an invalid src: ${trimmedSrc}`);
+  }
 
   return (
     <NewsImageInner
-      key={normalizedSrc}
       src={normalizedSrc}
       alt={alt}
       priority={priority}

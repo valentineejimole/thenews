@@ -22,6 +22,8 @@ export type Article = {
   updatedAt?: string;
   readTime: string;
   image: string;
+  coverImageUrl?: string;
+  cover_image_url?: string;
   imageAlt: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -41,6 +43,10 @@ export type Article = {
   trendingScore: number;
   tags: string[];
 };
+
+export function resolveArticleImageSrc(article: Article) {
+  return article.coverImageUrl?.trim() || article.cover_image_url?.trim() || article.image?.trim() || "";
+}
 
 export const articles: Article[] = [
   {
