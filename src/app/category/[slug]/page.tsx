@@ -10,6 +10,8 @@ import {
   getCategorySlug,
 } from "@/lib/news";
 
+export const revalidate = 60;
+
 export function generateStaticParams() {
   return categories.map((category) => ({
     slug: getCategorySlug(category),

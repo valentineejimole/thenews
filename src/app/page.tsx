@@ -8,6 +8,8 @@ import { getPublicArticles } from "@/lib/articles";
 import type { Article } from "@/lib/news-data";
 import { buildMetadata, formatArticleDateTime, getCategorySlug } from "@/lib/news";
 
+export const revalidate = 60;
+
 export const metadata = buildMetadata({
   title: "NewsPressal | Independent. Insightful. In real time.",
   description:

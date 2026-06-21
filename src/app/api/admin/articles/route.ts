@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { categories } from "@/lib/news-data";
 import type { HomepagePlacement } from "@/lib/admin";
-import { getAuthenticatedProfile, slugifyArticleTitle } from "@/lib/articles";
+import { getAuthenticatedProfile, normalizeArticleSlug, slugifyArticleTitle } from "@/lib/articles";
 
 type ArticlePayload = {
   title?: string;
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as ArticlePayload;
   const title = body.title?.trim() ?? "";
-  const slug = (body.slug?.trim() || slugifyArticleTitle(title)).toLowerCase();
+  const slug = normalizeArticleSlug(body.slug?.trim() || slugifyArticleTitle(title));
   const content = body.content?.trim() ?? "";
   const category = body.category?.trim() ?? "";
   const status = body.status === "published" ? "published" : "draft";
@@ -171,6 +172,14 @@ export async function POST(request: Request) {
     cover_image_url: data.cover_image_url,
     updated_at: data.updated_at,
   });
+
+  const categorySlug = category.toLowerCase();
+  revalidatePath("/");
+  revalidatePath(`/article/${slug}`);
+  revalidatePath("/search");
+  if (categorySlug) {
+    revalidatePath(`/category/${categorySlug}`);
+  }
 
   return NextResponse.json(
     {

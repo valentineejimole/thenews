@@ -33,6 +33,8 @@ export type SupabaseArticleRow = {
   reading_time: number | null;
   editor_note: string | null;
   published_at: string | null;
+  deleted_at?: string | null;
+  deletedAt?: string | null;
   created_at: string;
   updated_at: string;
 };

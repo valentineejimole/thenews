@@ -27,6 +27,23 @@ function buildSourceLabel(category: Category) {
   return `NewsPressal ${category} Desk`;
 }
 
+function normalizeArticleStatus(value?: string | null) {
+  return value?.trim().toLowerCase() === "published" ? "published" : "draft";
+}
+
+function getDeletedAt(row: SupabaseArticleRow) {
+  const candidate = row as SupabaseArticleRow & {
+    deleted_at?: string | null;
+    deletedAt?: string | null;
+  };
+
+  return candidate.deleted_at ?? candidate.deletedAt ?? null;
+}
+
+function isDeletedArticle(row: SupabaseArticleRow) {
+  return Boolean(getDeletedAt(row));
+}
+
 function toIsoOrNull(value?: string | null) {
   const trimmed = value?.trim();
 
@@ -97,7 +114,7 @@ function normalizeHomepagePlacement(value?: string | null): HomepagePlacement {
 }
 
 function isScheduledReady(row: Pick<SupabaseArticleRow, "scheduled_at" | "status">, now = new Date()) {
-  if (row.status !== "published") {
+  if (normalizeArticleStatus(row.status) !== "published") {
     return false;
   }
 
@@ -109,6 +126,7 @@ function isScheduledReady(row: Pick<SupabaseArticleRow, "scheduled_at" | "status
 }
 
 function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
+  const slug = normalizeArticleSlug(row.slug);
   const category = normalizeCategory(row.category);
   const content = splitContent(row.content);
   const featured = Boolean(row.is_featured);
@@ -128,7 +146,7 @@ function mapSupabaseArticle(row: SupabaseArticleRow, index: number): Article {
   });
 
   return {
-    slug: row.slug,
+    slug,
     title: row.title,
     excerpt: buildExcerpt(row.content, row.excerpt),
     content: content.length ? content : [row.content],
@@ -191,45 +209,52 @@ async function fetchPublishedSupabaseArticlesInternal() {
   }
 
   const now = new Date();
-  return (data as SupabaseArticleRow[]).filter((row) => isScheduledReady(row, now));
+  return (data as SupabaseArticleRow[])
+    .filter((row) => !isDeletedArticle(row))
+    .filter((row) => isScheduledReady(row, now));
 }
 
 export const fetchPublishedSupabaseArticles = cache(fetchPublishedSupabaseArticlesInternal);
 
 export async function getPublicArticles() {
-  const supabaseArticles = (await fetchPublishedSupabaseArticles()).map(mapSupabaseArticle);
+  const seenSupabaseSlugs = new Set<string>();
+  const supabaseArticles = (await fetchPublishedSupabaseArticles())
+    .map(mapSupabaseArticle)
+    .filter((article) => article.slug);
+  const dedupedSupabaseArticles = supabaseArticles.filter((article) => {
+    if (seenSupabaseSlugs.has(article.slug)) {
+      return false;
+    }
 
-  if (!supabaseArticles.length) {
+    seenSupabaseSlugs.add(article.slug);
+    return true;
+  });
+
+  if (!dedupedSupabaseArticles.length) {
     return mockArticles;
   }
 
-  const supabaseSlugs = new Set(supabaseArticles.map((article) => article.slug));
+  const supabaseSlugs = new Set(dedupedSupabaseArticles.map((article) => article.slug));
   const remainingMockArticles = mockArticles
-    .filter((article) => !supabaseSlugs.has(article.slug))
+    .filter((article) => !supabaseSlugs.has(normalizeArticleSlug(article.slug)))
     .map((article) => ({
       ...article,
       featured: false,
     }));
-  return [...supabaseArticles, ...remainingMockArticles];
+  return [...dedupedSupabaseArticles, ...remainingMockArticles];
 }
 
 export async function getPublicArticleBySlug(slug: string) {
-  const supabase = createSupabasePublicClient();
+  const normalizedSlug = normalizeArticleSlug(slug);
+  const matchingSupabaseArticle = (await fetchPublishedSupabaseArticles()).find(
+    (article) => normalizeArticleSlug(article.slug) === normalizedSlug,
+  );
 
-  if (supabase) {
-    const { data } = await supabase
-      .from("articles")
-      .select("*")
-      .eq("slug", slug)
-      .eq("status", "published")
-      .maybeSingle();
-
-    if (data && isScheduledReady(data as SupabaseArticleRow)) {
-      return mapSupabaseArticle(data as SupabaseArticleRow, 0);
-    }
+  if (matchingSupabaseArticle) {
+    return mapSupabaseArticle(matchingSupabaseArticle, 0);
   }
 
-  return mockArticles.find((article) => article.slug === slug);
+  return mockArticles.find((article) => normalizeArticleSlug(article.slug) === normalizedSlug);
 }
 
 export async function getPublicRelatedArticles(article: Article, limit = 3) {
@@ -279,7 +304,7 @@ export async function searchPublicArticles(query: string, categorySlug?: string)
 
 export async function getSupabaseArticleSlugs() {
   const rows = await fetchPublishedSupabaseArticles();
-  return rows.map((row) => row.slug);
+  return [...new Set(rows.map((row) => normalizeArticleSlug(row.slug)).filter(Boolean))];
 }
 
 export async function getAuthenticatedProfile() {
@@ -326,17 +351,27 @@ export function slugifyArticleTitle(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function normalizeArticleSlug(value: string) {
+  const trimmed = value.trim().replace(/^\/+|\/+$/g, "");
+
+  if (!trimmed) {
+    return "";
+  }
+
+  return slugifyArticleTitle(trimmed);
+}
+
 export function mapSupabaseArticleToAdminRecord(row: SupabaseArticleRow): AdminArticleRecord {
   return {
     id: row.id,
     title: row.title,
-    slug: row.slug,
+    slug: normalizeArticleSlug(row.slug),
     category: normalizeCategory(row.category),
     excerpt: row.excerpt ?? "",
     coverImageUrl: row.cover_image_url ?? "",
     content: row.content,
     author: row.author_name ?? "",
-    status: row.status,
+    status: normalizeArticleStatus(row.status),
     publishDate: toDateTimeLocalValue(row.scheduled_at ?? row.published_at ?? row.created_at),
     seoTitle: row.seo_title ?? row.title,
     seoDescription: row.seo_description ?? row.excerpt ?? "",

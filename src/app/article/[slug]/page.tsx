@@ -19,6 +19,8 @@ import {
   getCategorySlug,
 } from "@/lib/news";
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   const supabaseSlugs = await getSupabaseArticleSlugs();
   const slugs = new Set([...articles.map((article) => article.slug), ...supabaseSlugs]);

@@ -6,6 +6,8 @@ import { getPublicArticles } from "@/lib/articles";
 import { buildMetadata, siteDescription, siteName } from "@/lib/news";
 import "./globals.css";
 
+export const revalidate = 60;
+
 const bodyFont = Public_Sans({
   variable: "--font-public-sans",
   subsets: ["latin"],

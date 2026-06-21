@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { categories } from "@/lib/news-data";
 import type { HomepagePlacement } from "@/lib/admin";
-import { canManageAllArticles, getAuthenticatedProfile, slugifyArticleTitle } from "@/lib/articles";
+import {
+  canManageAllArticles,
+  getAuthenticatedProfile,
+  normalizeArticleSlug,
+  slugifyArticleTitle,
+} from "@/lib/articles";
 
 type ArticlePayload = {
   title?: string;
@@ -132,9 +138,12 @@ export async function PATCH(
 
   const body = (await request.json()) as ArticlePayload;
   const title = body.title?.trim() ?? "";
-  const slug = (body.slug?.trim() || slugifyArticleTitle(title)).toLowerCase();
+  const previousSlug = normalizeArticleSlug(existing.slug);
+  const previousCategorySlug = existing.category?.trim().toLowerCase();
+  const slug = normalizeArticleSlug(body.slug?.trim() || slugifyArticleTitle(title));
   const content = body.content?.trim() ?? "";
   const category = body.category?.trim() ?? "";
+  const nextCategorySlug = category.toLowerCase();
   const status = body.status === "published" ? "published" : "draft";
   const scheduledAt = toIsoOrNull(body.publishDate);
   const publishedAt =
@@ -193,6 +202,17 @@ export async function PATCH(
     cover_image_url: updatedArticle.cover_image_url,
     updated_at: updatedArticle.updated_at,
   });
+
+  revalidatePath("/");
+  revalidatePath("/search");
+  revalidatePath(`/article/${slug}`);
+  if (previousSlug && previousSlug !== slug) {
+    revalidatePath(`/article/${previousSlug}`);
+  }
+  if (previousCategorySlug) {
+    revalidatePath(`/category/${previousCategorySlug}`);
+  }
+  revalidatePath(`/category/${nextCategorySlug}`);
 
   return NextResponse.json({ success: "Article updated.", article: updatedArticle }, { status: 200 });
 }
